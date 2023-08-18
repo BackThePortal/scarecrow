@@ -1,0 +1,3 @@
+[submodule "thetinmen-db"]
+	path = thetinmen-db
+	url = https://github.com/BackThePortal/thetinmen-db.git
