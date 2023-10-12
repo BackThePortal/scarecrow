@@ -1,4 +1,4 @@
-echo off
+@echo off
 
 python --version 3>NUL
 
@@ -9,7 +9,7 @@ if errorlevel 1 (
     exit
 )
 
-echo Installing dependencies.
+echo Installing dependencies...
 pip install -r requirements.txt
 
 if not exist .env (

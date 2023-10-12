@@ -1,32 +1,24 @@
-from instaloader import Instaloader, Profile
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 
+opts = Options()
+opts.add_experimental_option("detach", True)
+driver = webdriver.Chrome()
 
-# Gets the firsts posts and gets the most recent one, to deal with pins.
-def get_last_post():
-    dates = []
+agent = driver.execute_script("return navigator.userAgent")
+print(agent)
 
-    L = Instaloader()
+driver.get("https://www.instagram.com/thetinmen/")
 
-
-
-    profile = Profile.from_username(L.context, 'thetinmen')
-
-    posts = profile.get_posts()
-
-    i = 0
-    for post in posts:
-        dates.append(post.date_utc)
-        i += 1
-        if i == 4:
-            break
-
-    post_index = dates.index(max(dates))
-
-    i = 0
-    for post in posts:
-        if i == post_index:
-            print(post)
-            break
-
-
-get_last_post()
+el = None
+try:
+    el = WebDriverWait(driver, 100).until(
+        EC.presence_of_element_located((By.ID, "x1iyjqo2"))
+    )
+finally:
+    print(el.get_attribute('class'))
+    driver.quit()

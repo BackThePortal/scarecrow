@@ -2,12 +2,15 @@ import discord
 from discord import app_commands
 import os
 import logging
+
+from discord.ext import commands
 from dotenv import load_dotenv
 from datetime import datetime
 from itertools import islice
 from math import ceil
 
 from instaloader import Instaloader, Profile
+
 load_dotenv()
 
 MY_GUILD = discord.Object(id=823586247989526568)  # TTM Server ID
@@ -52,10 +55,13 @@ client = MyClient(intents=intents)
 
 
 def get_target_channel():
-    f = open("channel.txt", "r")
-    channel = client.get_channel(int(f.read()))
-    f.close()
-    return channel
+    if os.path.exists('channel.txt'):
+        f = open("channel.txt", "r")
+        channel = client.get_channel(int(f.read()))
+        f.close()
+        return channel
+    else:
+        return None
 
 
 @client.event
@@ -69,47 +75,62 @@ async def hello(interaction: discord.Interaction):
     await interaction.response.send_message(f'Hi, {interaction.user.mention}')
 
 
+# @client.tree.command()
+# async def setchannel(interaction: discord.Interaction, channel: discord.TextChannel):
+#     """Set the channel where post announcements should be made."""
+#     f = open("channel.txt", "w")
+#     f.write(str(channel.id))
+#     f.close()
+#     await interaction.response.send_message(f'Announcement channel set to {channel.mention}')
+#
+#
+# @client.tree.command()
+# async def getchannel(interaction: discord.Interaction):
+#     """Get the current announcement channel."""
+#
+#     if os.path.exists('channel.txt'):
+#         channel = get_target_channel()
+#         await interaction.response.send_message(f'Current announcement channel: {channel.mention}.')
+#
+#     else:
+#         await interaction.response.send_message('No announcement channel set.')
+
+
+
 @client.tree.command()
-async def setchannel(interaction: discord.Interaction, channel: discord.TextChannel):
-    """Set the channel where post announcements should be made."""
-    f = open("channel.txt", "w")
-    f.write(str(channel.id))
-    f.close()
-    await interaction.response.send_message(f'Announcement channel set to {channel.mention}')
-
-
-@client.tree.command()
-async def getchannel(interaction: discord.Interaction):
-    """Get the current announcement channel."""
-
-    if os.path.exists('channel.txt'):
-        channel = get_target_channel()
-        await interaction.response.send_message(f'Current announcement channel: {channel.mention}.')
-
-    else:
-        await interaction.response.send_message(f'No announcement channel set.')
-
-
-@client.tree.command()
-async def post(interaction: discord.Interaction):
+async def post(interaction: discord.Interaction, attachment: discord.Attachment, url: str, title: str,
+               reel: bool = False, description: str = '', channel: discord.TextChannel = None):
     """Sends a message announcing the last post published."""
-
-    if os.path.exists('channel.txt'):
+    await interaction.response.defer()
+    if channel is None:
         channel = get_target_channel()
-        await interaction.response.send_message(f'Downloading post and sending message. This may take some time and '
-                                                f'the bot may appear offline.')
 
-        global profile
-        L.download_post(post=profile.get_posts().)
+    if channel:
+        print('Creating embed...')
+        embed = discord.Embed(title=title, description=description, url=url, color=0xfd4e0e)
+        embed.set_author(name="New reel by TheTinMen" if reel else "New post by TheTinMen")
+        embed.set_image(url=attachment.url)
+        embed.set_footer(text="Scarecrow")
+        print('Sending embed...', channel.name)
 
-        await interaction.channel.send(f'Message sent to {channel.mention}.')
+        try:
+            await channel.send(embed=embed)
+        except:
+            print('An error occured.')
+        print('Sending confirmation message...')
+        await interaction.followup.send(f'Message sent to {channel.mention}.')
 
     else:
-        await interaction.response.send_message(f'No announcement channel set.')
+        await interaction.followup.send(f'No announcement channel set.')
 
 
 @client.tree.command()
-async def send(interaction: discord.Interaction,)
+async def ping(interaction: discord.Interaction):
+
+    await interaction.response.defer()
+    print(interaction.user.roles)
+    await interaction.followup.send(f'Pong! {round(client.latency*1000, 2)}ms')
+
 
 
 client.run(os.getenv('TOKEN'), log_handler=handler)
